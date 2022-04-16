@@ -42,7 +42,7 @@ func GetShortLink(next http.Handler) http.Handler {
 			b, _ := io.ReadAll(r.Body)
 			shortLink := GenerateShortLink()
 			w.WriteHeader(http.StatusCreated)
-			_, err := w.Write([]byte(ServerURL + "/?id=" + shortLink))
+			_, err := w.Write([]byte("http://" + ServerURL + "/?id=" + shortLink))
 			if err != nil {
 				return
 			}
