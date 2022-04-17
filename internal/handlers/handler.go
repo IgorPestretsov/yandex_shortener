@@ -9,6 +9,17 @@ import (
 	"net/http"
 )
 
+type HandlerGenerator struct {
+	lastHandler http.Handler
+	channels    storage.Channels
+}
+
+func (hg *HandlerGenerator) Create(channels storage.Channels) http.Handler {
+	hg.lastHandler = http.HandlerFunc(hg.GetFullLinkByID)
+	hg.channels = channels
+	return Conveyor(hg.lastHandler, hg.GetShortLink)
+}
+
 type Middleware func(http.Handler) http.Handler
 
 func Conveyor(h http.Handler, middlewares ...Middleware) http.Handler {
@@ -18,8 +29,7 @@ func Conveyor(h http.Handler, middlewares ...Middleware) http.Handler {
 	return h
 }
 
-func GetFullLinkByID(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("here")
+func (hg *HandlerGenerator) GetFullLinkByID(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	case http.MethodGet:
@@ -28,9 +38,8 @@ func GetFullLinkByID(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "The query parameter is missing", http.StatusBadRequest)
 			return
 		}
-
-		storage.KeyChannel <- id
-		FullLink := <-storage.FullLinkChannel
+		hg.channels.KeyChannel <- id
+		FullLink := <-hg.channels.FullLinkChannel
 		if FullLink == "" {
 			http.Error(w, "Bad request", http.StatusBadRequest)
 			return
@@ -43,18 +52,19 @@ func GetFullLinkByID(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetShortLink(next http.Handler) http.Handler {
+func (hg *HandlerGenerator) GetShortLink(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
 			b, _ := io.ReadAll(r.Body)
 			shortLink := app.GenerateShortLink()
+			fmt.Println(shortLink)
 			w.WriteHeader(http.StatusCreated)
 			_, err := w.Write([]byte("http://" + server.ServerURL + "/?id=" + shortLink))
 			if err != nil {
 				return
 			}
-			storage.LinksPairsChannel <- [2]string{string(b), shortLink}
+			hg.channels.LinksPairsChannel <- [2]string{string(b), shortLink}
 		default:
 			next.ServeHTTP(w, r)
 		}

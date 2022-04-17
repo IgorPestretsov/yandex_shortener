@@ -8,16 +8,14 @@ import (
 )
 
 func main() {
-	storage.LinksPairsChannel = make(chan [2]string)
-	storage.KeyChannel = make(chan string)
-	storage.Storage = make(map[string]string)
-	storage.FullLinkChannel = make(chan string)
 
-	GetFullLinkByIDHandler := http.HandlerFunc(handlers.GetFullLinkByID)
+	s := storage.Storage{}
+	s.Run()
 
-	go storage.SaveLinksPair()
-	go storage.LoadLinksPair()
-	http.Handle("/", handlers.Conveyor(GetFullLinkByIDHandler, handlers.GetShortLink))
+	hg := handlers.HandlerGenerator{}
+	handler := hg.Create(s.Channels)
+
+	http.Handle("/", handler)
 	srv := &http.Server{
 		Addr: server.ServerURL,
 	}
