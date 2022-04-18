@@ -19,9 +19,6 @@ func main() {
 	srv := &http.Server{
 		Addr: server.ServerURL,
 	}
-	err := srv.ListenAndServe()
-	if err != nil {
-		return
-	}
+	srv.ListenAndServe()
 
 }
