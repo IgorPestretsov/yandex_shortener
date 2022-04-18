@@ -11,7 +11,7 @@ func TestGenerateShortLink(t *testing.T) {
 		want int
 	}{{
 		name: "Short link generated",
-		want: seq_length,
+		want: seqLength,
 	},
 	}
 	for _, tt := range tests {
