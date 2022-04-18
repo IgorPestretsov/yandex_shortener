@@ -30,6 +30,7 @@ func Conveyor(h http.Handler, middlewares ...Middleware) http.Handler {
 }
 
 func (hg *HandlerGenerator) GetFullLinkByID(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 	switch r.Method {
 
 	case http.MethodGet:
@@ -48,12 +49,14 @@ func (hg *HandlerGenerator) GetFullLinkByID(w http.ResponseWriter, r *http.Reque
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
 	}
 
 }
 
 func (hg *HandlerGenerator) GetShortLink(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
 		switch r.Method {
 		case http.MethodPost:
 			b, _ := io.ReadAll(r.Body)
