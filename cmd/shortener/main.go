@@ -11,14 +11,13 @@ import (
 func main() {
 	r := chi.NewRouter()
 
-	s := storage.Storage{}
-	s.Init()
+	s := storage.New()
 	r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.GetFullLinkByID(rw, r, &s)
+		handlers.GetFullLinkByID(rw, r, s)
 	})
 
 	r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.GetShortLink(rw, r, &s)
+		handlers.GetShortLink(rw, r, s)
 	})
 
 	log.Fatal(http.ListenAndServe("localhost:8080", r))

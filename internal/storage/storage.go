@@ -1,13 +1,12 @@
 package storage
 
-import "fmt"
-
 type Storage struct {
 	Storage map[string]string
 }
 
-func (s *Storage) Init() {
-	s.Storage = make(map[string]string)
+func New() *Storage {
+	s := Storage{Storage: make(map[string]string)}
+	return &s
 }
 
 func (s *Storage) LoadLinksPair(key string) string {
@@ -17,5 +16,4 @@ func (s *Storage) LoadLinksPair(key string) string {
 
 func (s *Storage) SaveLinksPair(key string, link string) {
 	s.Storage[link] = key
-	fmt.Println()
 }

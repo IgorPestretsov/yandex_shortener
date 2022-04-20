@@ -48,15 +48,14 @@ func TestGetFullLinkByID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := storage.Storage{}
-			s.Init()
+			s := storage.New()
 			s.SaveLinksPair("https://google.com", "ggl")
 			s.SaveLinksPair("https://practicum.yandex.ru", "yndxprct")
 
 			r := chi.NewRouter()
 
 			r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
-				GetFullLinkByID(rw, r, &s)
+				GetFullLinkByID(rw, r, s)
 			})
 
 			req := httptest.NewRequest(http.MethodGet, tt.request, nil)
@@ -97,13 +96,12 @@ func TestGetShortLink(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := storage.Storage{}
-			s.Init()
+			s := storage.New()
 
 			r := chi.NewRouter()
 
 			r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
-				GetShortLink(rw, r, &s)
+				GetShortLink(rw, r, s)
 			})
 
 			req := httptest.NewRequest(http.MethodPost, "/", tt.body)
