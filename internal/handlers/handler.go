@@ -1,75 +1,43 @@
 package handlers
 
 import (
-	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/app"
 	"github.com/IgorPestretsov/yandex_shortener/internal/server"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
+	"github.com/go-chi/chi/v5"
 	"io"
 	"net/http"
 )
 
-type HandlerGenerator struct {
-	lastHandler http.Handler
-	channels    storage.Channels
-}
-
-func (hg *HandlerGenerator) Create(channels storage.Channels) http.Handler {
-	hg.lastHandler = http.HandlerFunc(hg.GetFullLinkByID)
-	hg.channels = channels
-	return Conveyor(hg.lastHandler, hg.GetShortLink)
-}
-
-type Middleware func(http.Handler) http.Handler
-
-func Conveyor(h http.Handler, middlewares ...Middleware) http.Handler {
-	for _, middleware := range middlewares {
-		h = middleware(h)
+func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s *storage.Storage) {
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		http.Error(w, "ID param is missed", http.StatusBadRequest)
+		return
 	}
-	return h
-}
-
-func (hg *HandlerGenerator) GetFullLinkByID(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-
-	case http.MethodGet:
-		id := r.URL.Query().Get("id")
-		if id == "" {
-			http.Error(w, "The query parameter is missing", http.StatusBadRequest)
-			return
-		}
-		hg.channels.KeyChannel <- id
-		FullLink := <-hg.channels.FullLinkChannel
-		if FullLink == "" {
-			http.Error(w, "Bad request", http.StatusBadRequest)
-			return
-		}
-		w.Header().Set("Location", FullLink)
-		w.WriteHeader(http.StatusTemporaryRedirect)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-
+	FullLink := s.LoadLinksPair(id)
+	if FullLink == "" {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
 	}
+
+	w.Header().Set("Location", FullLink)
+	w.WriteHeader(http.StatusTemporaryRedirect)
 	r.Body.Close()
 
 }
 
-func (hg *HandlerGenerator) GetShortLink(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
-			b, _ := io.ReadAll(r.Body)
-			shortLink := app.GenerateShortLink()
-			fmt.Println(shortLink)
-			w.WriteHeader(http.StatusCreated)
-			_, err := w.Write([]byte("http://" + server.ServerURL + "/?id=" + shortLink))
-			if err != nil {
-				return
-			}
-			hg.channels.LinksPairsChannel <- [2]string{string(b), shortLink}
-		default:
-			next.ServeHTTP(w, r)
-		}
-		r.Body.Close()
-	})
+func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
+	b, _ := io.ReadAll(r.Body)
+	if string(b) == "" {
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	shortLink := app.GenerateShortLink()
+	s.SaveLinksPair(string(b), shortLink)
+	rw.WriteHeader(http.StatusCreated)
+	_, err := rw.Write([]byte("http://" + server.ServerURL + "/" + shortLink))
+	if err != nil {
+		return
+	}
 }
