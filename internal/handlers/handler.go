@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/app"
 	"github.com/IgorPestretsov/yandex_shortener/internal/server"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
@@ -37,6 +39,38 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
 	s.SaveLinksPair(string(b), shortLink)
 	rw.WriteHeader(http.StatusCreated)
 	_, err := rw.Write([]byte("http://" + server.ServerURL + "/" + shortLink))
+	if err != nil {
+		return
+	}
+}
+func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
+	inputData := struct {
+		Url string `json:"url"`
+	}{}
+	GeneratedData := struct {
+		Result string `json:"result"`
+	}{}
+	rawData, _ := io.ReadAll(r.Body)
+	err := json.Unmarshal(rawData, &inputData)
+
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	fmt.Println(inputData.Url)
+	GeneratedData.Result = "http://" + server.ServerURL + "/" + app.GenerateShortLink()
+	s.SaveLinksPair(inputData.Url, GeneratedData.Result)
+
+	output, err := json.Marshal(GeneratedData)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(string(output))
+	rw.Header().Add("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusCreated)
+
+	_, err = rw.Write(output)
 	if err != nil {
 		return
 	}
