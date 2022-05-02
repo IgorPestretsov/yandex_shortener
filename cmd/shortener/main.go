@@ -2,23 +2,28 @@ package main
 
 import (
 	"github.com/IgorPestretsov/yandex_shortener/internal/handlers"
-	"github.com/IgorPestretsov/yandex_shortener/internal/server"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
+	"github.com/go-chi/chi/v5"
+	"log"
 	"net/http"
 )
 
 func main() {
+	r := chi.NewRouter()
 
-	s := storage.Storage{}
-	s.Run()
+	s := storage.New()
+	r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
+		handlers.GetFullLinkByID(rw, r, s)
+	})
 
-	hg := handlers.HandlerGenerator{}
-	handler := hg.Create(s.Channels)
+	r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
+		handlers.GetShortLink(rw, r, s)
+	})
 
-	http.Handle("/", handler)
-	srv := &http.Server{
-		Addr: server.ServerURL,
-	}
-	srv.ListenAndServe()
+	r.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
+		handlers.GetShortLinkAPI(rw, r, s)
+	})
+
+	log.Fatal(http.ListenAndServe("localhost:8080", r))
 
 }
