@@ -114,3 +114,48 @@ func TestGetShortLink(t *testing.T) {
 		})
 	}
 }
+
+func TestGetShortLinkAPI(t *testing.T) {
+	type want struct {
+		statusCode int
+	}
+	tests := []struct {
+		name string
+		body io.Reader
+		want want
+	}{
+		{
+			name: "test 1",
+			body: strings.NewReader("yandex.ru"),
+			want: want{
+				statusCode: http.StatusCreated,
+			},
+		},
+		{
+			name: "test 2",
+			body: strings.NewReader(""),
+			want: want{
+				statusCode: http.StatusBadRequest,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := storage.New()
+
+			r := chi.NewRouter()
+
+			r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
+				GetShortLink(rw, r, s)
+			})
+
+			req := httptest.NewRequest(http.MethodPost, "/", tt.body)
+			w := httptest.NewRecorder()
+
+			r.ServeHTTP(w, req)
+			result := w.Result()
+			defer result.Body.Close()
+			assert.Equal(t, tt.want.statusCode, result.StatusCode)
+		})
+	}
+}

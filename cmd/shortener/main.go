@@ -20,6 +20,10 @@ func main() {
 		handlers.GetShortLink(rw, r, s)
 	})
 
+	r.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
+		handlers.GetShortLinkAPI(rw, r, s)
+	})
+
 	log.Fatal(http.ListenAndServe("localhost:8080", r))
 
 }
