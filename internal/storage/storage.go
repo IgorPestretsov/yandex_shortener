@@ -1,5 +1,7 @@
 package storage
 
+import "fmt"
+
 type Storage struct {
 	Storage map[string]string
 }
@@ -10,6 +12,7 @@ func New() *Storage {
 }
 
 func (s *Storage) LoadLinksPair(key string) string {
+	fmt.Println(*s)
 	FullLink := s.Storage[key]
 	return FullLink
 }

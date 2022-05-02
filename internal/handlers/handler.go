@@ -13,11 +13,13 @@ import (
 
 func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s *storage.Storage) {
 	id := chi.URLParam(r, "id")
+	fmt.Println("id2:", id)
 	if id == "" {
 		http.Error(w, "ID param is missed", http.StatusBadRequest)
 		return
 	}
 	FullLink := s.LoadLinksPair(id)
+	fmt.Println("fulllink:", FullLink)
 	if FullLink == "" {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
@@ -45,7 +47,7 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
 }
 func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
 	inputData := struct {
-		Url string `json:"url"`
+		URL string `json:"url"`
 	}{}
 	GeneratedData := struct {
 		Result string `json:"result"`
@@ -57,9 +59,10 @@ func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	fmt.Println(inputData.Url)
-	GeneratedData.Result = "http://" + server.ServerURL + "/" + app.GenerateShortLink()
-	s.SaveLinksPair(inputData.Url, GeneratedData.Result)
+	fmt.Println(inputData.URL)
+	id := app.GenerateShortLink()
+	s.SaveLinksPair(inputData.URL, id)
+	GeneratedData.Result = "http://" + server.ServerURL + "/" + id
 
 	output, err := json.Marshal(GeneratedData)
 	if err != nil {
