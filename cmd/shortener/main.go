@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/handlers"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/caarlos0/env/v6"
@@ -10,8 +11,8 @@ import (
 )
 
 type Config struct {
-	ServerAddress string `env:"SERVER_ADDRESS,required"`
-	BaseURL       string `env:"BASE_URL,required"`
+	ServerAddress string `env:"SERVER_ADDRESS" envDefault:"8080"`
+	BaseURL       string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 }
 
 func main() {
@@ -34,7 +35,7 @@ func main() {
 	r.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetShortLinkAPI(rw, r, s, cfg.BaseURL)
 	})
-
+	fmt.Println(cfg.ServerAddress)
 	log.Fatal(http.ListenAndServe(cfg.ServerAddress, r))
 
 }
