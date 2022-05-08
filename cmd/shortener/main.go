@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/handlers"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/caarlos0/env/v6"
@@ -22,7 +21,6 @@ func main() {
 		log.Fatal(err)
 	}
 	r := chi.NewRouter()
-	fmt.Println(cfg)
 	s := storage.New()
 	r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetFullLinkByID(rw, r, s)
@@ -35,7 +33,6 @@ func main() {
 	r.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetShortLinkAPI(rw, r, s, cfg.BaseURL)
 	})
-	fmt.Println(cfg.ServerAddress)
 	log.Fatal(http.ListenAndServe(cfg.ServerAddress, r))
 
 }
