@@ -28,7 +28,7 @@ func main() {
 	})
 
 	r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.GetShortLink(rw, r, s, cfg.BaseURL)
+		handlers.GetShortLink(rw, r, s)
 	})
 
 	r.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
