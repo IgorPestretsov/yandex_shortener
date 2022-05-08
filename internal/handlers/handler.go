@@ -27,7 +27,7 @@ func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s *storage.Storage)
 
 }
 
-func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage, baseUrl string) {
+func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage, baseURL string) {
 	b, _ := io.ReadAll(r.Body)
 	if string(b) == "" {
 		rw.WriteHeader(http.StatusBadRequest)
@@ -36,7 +36,7 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage, b
 	shortLink := app.GenerateShortLink()
 	s.SaveLinksPair(string(b), shortLink)
 	rw.WriteHeader(http.StatusCreated)
-	_, err := rw.Write([]byte(baseUrl + "/" + shortLink))
+	_, err := rw.Write([]byte(baseURL + "/" + shortLink))
 	if err != nil {
 		return
 	}
