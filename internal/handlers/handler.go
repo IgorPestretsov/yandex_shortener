@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/app"
-	"github.com/IgorPestretsov/yandex_shortener/internal/server"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"io"
@@ -31,7 +30,7 @@ func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s *storage.Storage)
 
 }
 
-func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
+func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage, baseURL string) {
 	b, _ := io.ReadAll(r.Body)
 	if string(b) == "" {
 		rw.WriteHeader(http.StatusBadRequest)
@@ -40,12 +39,12 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
 	shortLink := app.GenerateShortLink()
 	s.SaveLinksPair(string(b), shortLink)
 	rw.WriteHeader(http.StatusCreated)
-	_, err := rw.Write([]byte("http://" + server.ServerURL + "/" + shortLink))
+	_, err := rw.Write([]byte(baseURL + shortLink))
 	if err != nil {
 		return
 	}
 }
-func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
+func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage, baseURL string) {
 	inputData := struct {
 		URL string `json:"url"`
 	}{}
@@ -62,7 +61,7 @@ func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage
 	fmt.Println(inputData.URL)
 	id := app.GenerateShortLink()
 	s.SaveLinksPair(inputData.URL, id)
-	GeneratedData.Result = "http://" + server.ServerURL + "/" + id
+	GeneratedData.Result = baseURL + id
 
 	output, err := json.Marshal(GeneratedData)
 	if err != nil {
