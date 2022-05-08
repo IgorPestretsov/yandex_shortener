@@ -73,3 +73,36 @@ func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage
 		return
 	}
 }
+func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
+	inputData := struct {
+		URL string `json:"url"`
+	}{}
+	GeneratedData := struct {
+		Result string `json:"result"`
+	}{}
+	rawData, _ := io.ReadAll(r.Body)
+	err := json.Unmarshal(rawData, &inputData)
+
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	fmt.Println(inputData.URL)
+	id := app.GenerateShortLink()
+	s.SaveLinksPair(inputData.URL, id)
+	GeneratedData.Result = "http://" + server.ServerURL + "/" + id
+
+	output, err := json.Marshal(GeneratedData)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(string(output))
+	rw.Header().Add("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusCreated)
+
+	_, err = rw.Write(output)
+	if err != nil {
+		return
+	}
+}
