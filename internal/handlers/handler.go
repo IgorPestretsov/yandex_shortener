@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/app"
-	"github.com/IgorPestretsov/yandex_shortener/internal/server"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"io"
@@ -13,13 +11,11 @@ import (
 
 func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s *storage.Storage) {
 	id := chi.URLParam(r, "id")
-	fmt.Println("id2:", id)
 	if id == "" {
 		http.Error(w, "ID param is missed", http.StatusBadRequest)
 		return
 	}
 	FullLink := s.LoadLinksPair(id)
-	fmt.Println("fulllink:", FullLink)
 	if FullLink == "" {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
@@ -31,7 +27,7 @@ func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s *storage.Storage)
 
 }
 
-func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
+func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage, baseURL string) {
 	b, _ := io.ReadAll(r.Body)
 	if string(b) == "" {
 		rw.WriteHeader(http.StatusBadRequest)
@@ -40,12 +36,12 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
 	shortLink := app.GenerateShortLink()
 	s.SaveLinksPair(string(b), shortLink)
 	rw.WriteHeader(http.StatusCreated)
-	_, err := rw.Write([]byte("http://" + server.ServerURL + "/" + shortLink))
+	_, err := rw.Write([]byte(baseURL + "/" + shortLink))
 	if err != nil {
 		return
 	}
 }
-func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
+func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage, baseURL string) {
 	inputData := struct {
 		URL string `json:"url"`
 	}{}
@@ -59,17 +55,15 @@ func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	fmt.Println(inputData.URL)
 	id := app.GenerateShortLink()
 	s.SaveLinksPair(inputData.URL, id)
-	GeneratedData.Result = "http://" + server.ServerURL + "/" + id
+	GeneratedData.Result = baseURL + "/" + id
 
 	output, err := json.Marshal(GeneratedData)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(string(output))
 	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(http.StatusCreated)
 

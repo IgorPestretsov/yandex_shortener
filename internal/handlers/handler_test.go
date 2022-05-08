@@ -101,7 +101,7 @@ func TestGetShortLink(t *testing.T) {
 			r := chi.NewRouter()
 
 			r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
-				GetShortLink(rw, r, s)
+				GetShortLink(rw, r, s, "http://localhost:8080")
 			})
 
 			req := httptest.NewRequest(http.MethodPost, "/", tt.body)
@@ -146,7 +146,7 @@ func TestGetShortLinkAPI(t *testing.T) {
 			r := chi.NewRouter()
 
 			r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
-				GetShortLink(rw, r, s)
+				GetShortLink(rw, r, s, "http://localhost:8080")
 			})
 
 			req := httptest.NewRequest(http.MethodPost, "/", tt.body)
