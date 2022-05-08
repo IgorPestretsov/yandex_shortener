@@ -22,7 +22,7 @@ func main() {
 		log.Fatal(err)
 	}
 	r := chi.NewRouter()
-
+	fmt.Println(cfg)
 	s := storage.New()
 	r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetFullLinkByID(rw, r, s)
