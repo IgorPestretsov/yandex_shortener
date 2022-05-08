@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/IgorPestretsov/yandex_shortener/internal/app"
-	"github.com/IgorPestretsov/yandex_shortener/internal/server"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"io"
@@ -28,7 +27,7 @@ func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s *storage.Storage)
 
 }
 
-func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
+func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage, baseUrl string) {
 	b, _ := io.ReadAll(r.Body)
 	if string(b) == "" {
 		rw.WriteHeader(http.StatusBadRequest)
@@ -37,7 +36,7 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage) {
 	shortLink := app.GenerateShortLink()
 	s.SaveLinksPair(string(b), shortLink)
 	rw.WriteHeader(http.StatusCreated)
-	_, err := rw.Write([]byte("http://" + server.ServerURL + "/" + shortLink))
+	_, err := rw.Write([]byte(baseUrl + "/" + shortLink))
 	if err != nil {
 		return
 	}

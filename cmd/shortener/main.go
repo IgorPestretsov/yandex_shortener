@@ -11,8 +11,8 @@ import (
 )
 
 type Config struct {
-	ServerAddress string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
-	BaseURL       string `env:"BASE_URL" envDefault:"http://localhost:8080"`
+	ServerAddress string `env:"SERVER_ADDRESS" envDefault:"localhost:35217"`
+	BaseURL       string `env:"BASE_URL" envDefault:"http://localhost:35217"`
 }
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 	})
 
 	r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.GetShortLink(rw, r, s)
+		handlers.GetShortLink(rw, r, s, cfg.BaseURL)
 	})
 
 	r.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
