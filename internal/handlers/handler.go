@@ -58,7 +58,7 @@ func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage
 	}
 	id := app.GenerateShortLink()
 	s.SaveLinksPair(inputData.URL, id)
-	GeneratedData.Result = baseURL + id
+	GeneratedData.Result = baseURL + "/" + id
 
 	output, err := json.Marshal(GeneratedData)
 	if err != nil {
