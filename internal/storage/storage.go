@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -41,7 +40,6 @@ func (s *Storage) loadStorageFromFile() {
 }
 
 func (s *Storage) LoadLinksPair(key string) string {
-	fmt.Println(*s)
 	FullLink := s.Storage[key]
 	return FullLink
 }

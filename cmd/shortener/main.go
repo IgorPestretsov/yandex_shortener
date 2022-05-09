@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/handlers"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/caarlos0/env/v6"
@@ -21,6 +22,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println(cfg)
 	r := chi.NewRouter()
 	s := storage.New(cfg.FileStoragePath)
 	defer s.Close()
