@@ -21,7 +21,7 @@ func NewConsumer(filename string) (*consumer, error) {
 func (c *consumer) ReadData() (map[string]string, error) {
 	data := make(map[string]string)
 	if err := c.decoder.Decode(&data); err != nil {
-		return nil, err
+		return data, err
 	}
 	return data, nil
 }

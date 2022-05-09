@@ -14,17 +14,18 @@ func New(filepath string) *Storage {
 	data := make(map[string]string)
 	s := Storage{Storage: data}
 	if filepath != "" {
+		p, err := NewProducer(filepath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		s.producer = p
+
 		c, err := NewConsumer(filepath)
 		if err != nil {
 			log.Fatal(err)
 		}
 		s.consumer = c
 
-		p, err := NewProducer(filepath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		s.producer = p
 		s.loadStorageFromFile()
 	}
 
@@ -35,7 +36,7 @@ func (s *Storage) loadStorageFromFile() {
 	var err error
 	s.Storage, err = s.consumer.ReadData()
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Cannot read storage file. ")
 	}
 }
 
