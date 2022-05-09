@@ -10,8 +10,9 @@ import (
 )
 
 type Config struct {
-	ServerAddress string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
-	BaseURL       string `env:"BASE_URL" envDefault:"http://localhost:8080"`
+	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
+	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
+	FileStoragePath string `env:"FILE_STORAGE_PATH"`
 }
 
 func main() {
@@ -21,7 +22,8 @@ func main() {
 		log.Fatal(err)
 	}
 	r := chi.NewRouter()
-	s := storage.New()
+	s := storage.New(cfg.FileStoragePath)
+	defer s.Close()
 	r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetFullLinkByID(rw, r, s)
 	})
