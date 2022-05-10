@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/handlers"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
@@ -22,7 +23,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(cfg)
+	parseFlags(&cfg)
+
 	r := chi.NewRouter()
 	s := storage.New(cfg.FileStoragePath)
 	defer s.Close()
@@ -39,4 +41,12 @@ func main() {
 	})
 	log.Fatal(http.ListenAndServe(cfg.ServerAddress, r))
 
+}
+
+func parseFlags(config *Config) {
+	fmt.Println(config)
+	flag.StringVar(&config.ServerAddress, "a", config.ServerAddress, "Server address to listen on")
+	flag.StringVar(&config.BaseURL, "b", config.BaseURL, "Base URL for shortlinks")
+	flag.StringVar(&config.FileStoragePath, "f", config.FileStoragePath, "File storage path")
+	flag.Parse()
 }
