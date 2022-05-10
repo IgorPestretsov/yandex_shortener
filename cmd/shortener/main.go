@@ -7,7 +7,6 @@ import (
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
 )
@@ -31,7 +30,7 @@ func main() {
 
 	r := chi.NewRouter()
 
-	r.Use(middleware.Compress(5))
+	//r.Use(middleware.Compress(5))
 	r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetFullLinkByID(rw, r, s)
 	})
