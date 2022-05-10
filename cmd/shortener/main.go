@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"flag"
 	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/handlers"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -29,8 +33,8 @@ func main() {
 	defer s.Close()
 
 	r := chi.NewRouter()
-
 	//r.Use(middleware.Compress(5))
+	r.Use(Decompress)
 	r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetFullLinkByID(rw, r, s)
 	})
@@ -52,4 +56,28 @@ func parseFlags(config *Config) {
 	flag.StringVar(&config.BaseURL, "b", config.BaseURL, "Base URL for shortlinks")
 	flag.StringVar(&config.FileStoragePath, "f", config.FileStoragePath, "File storage path")
 	flag.Parse()
+}
+
+func Decompress(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var reader io.Reader
+		if r.Header.Get(`Content-Encoding`) == `gzip` {
+			gz, err := gzip.NewReader(r.Body)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			reader = gz
+			defer gz.Close()
+		} else {
+			reader = r.Body
+		}
+		body, err := io.ReadAll(reader)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		r.Body = ioutil.NopCloser(bytes.NewReader(body))
+		next.ServeHTTP(w, r)
+	})
 }
