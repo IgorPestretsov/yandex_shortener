@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -56,7 +55,6 @@ func (s *Storage) SaveLinksPair(key string, link string) {
 			log.Fatal(err)
 		}
 	}
-	fmt.Println(s)
 
 }
 
