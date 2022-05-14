@@ -9,6 +9,13 @@ import (
 	"net/http"
 )
 
+type inputData struct {
+	URL string `json:"url"`
+}
+type generatedData struct {
+	Result string `json:"result"`
+}
+
 func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s *storage.Storage) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
@@ -42,24 +49,20 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage, b
 	}
 }
 func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage, baseURL string) {
-	inputData := struct {
-		URL string `json:"url"`
-	}{}
-	GeneratedData := struct {
-		Result string `json:"result"`
-	}{}
+	inData := inputData{}
+	genData := generatedData{}
 	rawData, _ := io.ReadAll(r.Body)
-	err := json.Unmarshal(rawData, &inputData)
+	err := json.Unmarshal(rawData, &inData)
 
 	if err != nil {
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	id := app.GenerateShortLink()
-	s.SaveLinksPair(inputData.URL, id)
-	GeneratedData.Result = baseURL + "/" + id
+	s.SaveLinksPair(inData.URL, id)
+	genData.Result = baseURL + "/" + id
 
-	output, err := json.Marshal(GeneratedData)
+	output, err := json.Marshal(genData)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return

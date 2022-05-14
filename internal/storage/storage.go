@@ -5,26 +5,26 @@ import (
 )
 
 type Storage struct {
-	Storage  map[string]string
-	consumer *consumer
-	producer *producer
+	Storage map[string]string
+	r       *reader
+	w       *writer
 }
 
 func New(filepath string) *Storage {
 	data := make(map[string]string)
 	s := Storage{Storage: data}
 	if filepath != "" {
-		p, err := NewProducer(filepath)
+		w, err := NewWriter(filepath)
 		if err != nil {
 			log.Fatal(err)
 		}
-		s.producer = p
+		s.w = w
 
-		c, err := NewConsumer(filepath)
+		r, err := NewReader(filepath)
 		if err != nil {
 			log.Fatal(err)
 		}
-		s.consumer = c
+		s.r = r
 
 		s.loadStorageFromFile()
 	}
@@ -34,7 +34,7 @@ func New(filepath string) *Storage {
 
 func (s *Storage) loadStorageFromFile() {
 	var err error
-	s.Storage, err = s.consumer.ReadData()
+	s.Storage, err = s.r.ReadData()
 	if err != nil {
 		log.Println("Cannot read storage file. ")
 	}
@@ -47,9 +47,9 @@ func (s *Storage) LoadLinksPair(key string) string {
 
 func (s *Storage) SaveLinksPair(key string, link string) {
 	s.Storage[link] = key
-	if s.producer != nil {
+	if s.w != nil {
 		toFile := map[string]string{link: key}
-		err := s.producer.WriteEvent(toFile)
+		err := s.w.WriteEvent(toFile)
 
 		if err != nil {
 			log.Fatal(err)
@@ -59,6 +59,6 @@ func (s *Storage) SaveLinksPair(key string, link string) {
 }
 
 func (s *Storage) Close() {
-	s.producer.Close()
-	s.consumer.Close()
+	s.w.Close()
+	s.r.Close()
 }
