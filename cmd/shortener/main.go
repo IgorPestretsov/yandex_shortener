@@ -2,11 +2,12 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/handlers"
+	"github.com/IgorPestretsov/yandex_shortener/internal/middlewares"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
 )
@@ -25,9 +26,12 @@ func main() {
 	}
 	parseFlags(&cfg)
 
-	r := chi.NewRouter()
 	s := storage.New(cfg.FileStoragePath)
 	defer s.Close()
+
+	r := chi.NewRouter()
+	r.Use(middleware.Compress(5))
+	r.Use(middlewares.Decompress)
 	r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetFullLinkByID(rw, r, s)
 	})
@@ -44,7 +48,6 @@ func main() {
 }
 
 func parseFlags(config *Config) {
-	fmt.Println(config)
 	flag.StringVar(&config.ServerAddress, "a", config.ServerAddress, "Server address to listen on")
 	flag.StringVar(&config.BaseURL, "b", config.BaseURL, "Base URL for shortlinks")
 	flag.StringVar(&config.FileStoragePath, "f", config.FileStoragePath, "File storage path")
