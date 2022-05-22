@@ -44,7 +44,7 @@ func main() {
 	r.Post("/api/shorten", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetShortLinkAPI(rw, r, s, cfg.BaseURL)
 	})
-	r.Post("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
+	r.Get("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetUserURLs(rw, r, s, cfg.BaseURL)
 	})
 	log.Fatal(http.ListenAndServe(cfg.ServerAddress, r))
