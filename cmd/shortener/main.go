@@ -13,24 +13,17 @@ import (
 	"net/http"
 )
 
-type DBConfig struct {
-	host     string
-	port     uint
-	user     string
-	password string
-	dbname   string
-}
-
 type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
 	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+	DBdsn           string `env:"DATABASE_DSN" envDefault:"password=P@ssw0rd dbname=mydb sslmode=disable host=localhost port=5432 user=user "`
 }
 
 func main() {
-	dbcfg := DBConfig{"localhost", 5432, "user", "P@ssw0rd", "mydb"}
 
 	var cfg Config
+
 	err := env.Parse(&cfg)
 	if err != nil {
 		log.Fatal(err)
@@ -59,7 +52,7 @@ func main() {
 		handlers.GetUserURLs(rw, r, s, cfg.BaseURL)
 	})
 	r.Get("/ping", func(rw http.ResponseWriter, r *http.Request) {
-		handlers.PingDB(rw, r, dbcfg.host, dbcfg.port, dbcfg.user, dbcfg.password, dbcfg.dbname)
+		handlers.PingDB(rw, r, cfg.DBdsn)
 	})
 	log.Fatal(http.ListenAndServe(cfg.ServerAddress, r))
 
@@ -67,7 +60,8 @@ func main() {
 
 func parseFlags(config *Config) {
 	flag.StringVar(&config.ServerAddress, "a", config.ServerAddress, "Server address to listen on")
-	flag.StringVar(&config.BaseURL, "b", config.BaseURL, "Base URL foshortlinks")
+	flag.StringVar(&config.BaseURL, "b", config.BaseURL, "Base URL shortlinks")
 	flag.StringVar(&config.FileStoragePath, "f", config.FileStoragePath, "File storage path")
+	flag.StringVar(&config.DBdsn, "d", config.DBdsn, "DB connection string")
 	flag.Parse()
 }

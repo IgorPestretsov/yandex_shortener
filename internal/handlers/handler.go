@@ -120,15 +120,10 @@ func GetUserURLs(w http.ResponseWriter, r *http.Request, s *storage.Storage, bas
 func PingDB(
 	w http.ResponseWriter,
 	r *http.Request,
-	host string,
-	port uint,
-	user string,
-	password string,
-	dbname string,
+	dsn string,
 ) {
-	psqlInfo := fmt.Sprintf("password=%s dbname=%s sslmode=disable"+" host=%s port=%d user=%s ",
-		password, dbname, host, port, user)
-	db, err := sql.Open("postgres", psqlInfo)
+
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
