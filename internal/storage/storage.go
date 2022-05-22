@@ -5,13 +5,13 @@ import (
 )
 
 type Storage struct {
-	Storage map[string]string
+	Storage map[string]map[string]string
 	r       *reader
 	w       *writer
 }
 
 func New(filepath string) *Storage {
-	data := make(map[string]string)
+	data := make(map[string]map[string]string)
 	s := Storage{Storage: data}
 	if filepath != "" {
 		w, err := NewWriter(filepath)
@@ -40,22 +40,32 @@ func (s *Storage) loadStorageFromFile() {
 	}
 }
 
-func (s *Storage) LoadLinksPair(key string) string {
-	FullLink := s.Storage[key]
-	return FullLink
+func (s *Storage) LoadLinksPair(uid string, key string) string {
+	for _, value := range s.Storage {
+		if FullLink, ok := value[key]; ok {
+			return FullLink
+		}
+	}
+	return ""
 }
 
-func (s *Storage) SaveLinksPair(key string, link string) {
-	s.Storage[link] = key
+func (s *Storage) SaveLinksPair(uid string, key string, link string) {
+	if _, ok := s.Storage[uid]; !ok {
+		s.Storage[uid] = make(map[string]string)
+	}
+	s.Storage[uid][link] = key
 	if s.w != nil {
-		toFile := map[string]string{link: key}
-		err := s.w.WriteEvent(toFile)
+		err := s.w.WriteEvent(s.Storage)
 
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
+}
+
+func (s *Storage) GetAllUserURLs(uid string) map[string]string {
+	return s.Storage[uid]
 }
 
 func (s *Storage) Close() {

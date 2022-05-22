@@ -3,6 +3,8 @@ package middlewares
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
+	"github.com/IgorPestretsov/yandex_shortener/internal/app"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -30,4 +32,30 @@ func Decompress(next http.Handler) http.Handler {
 		r.Body = ioutil.NopCloser(bytes.NewReader(body))
 		next.ServeHTTP(w, r)
 	})
+}
+
+func AuthUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var (
+			uid         string
+			cookieValue string
+		)
+		idCookie, err := r.Cookie("uid")
+		if err != nil {
+			uid, cookieValue = app.GenerateNewUserCookie()
+			cookie := http.Cookie{Name: "uid", Value: cookieValue}
+			http.SetCookie(w, &cookie)
+		} else {
+			cookieValue = idCookie.Value
+			uid, err = app.GetUserIDfromCookie(cookieValue)
+			if err != nil {
+				uid, cookieValue = app.GenerateNewUserCookie()
+				cookie := http.Cookie{Name: "uid", Value: cookieValue}
+				http.SetCookie(w, &cookie)
+			}
+
+		}
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "uid", uid)))
+	})
+
 }
