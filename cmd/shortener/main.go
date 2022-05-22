@@ -8,9 +8,18 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
 	"log"
 	"net/http"
 )
+
+type DBConfig struct {
+	host     string
+	port     uint
+	user     string
+	password string
+	dbname   string
+}
 
 type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
@@ -19,6 +28,8 @@ type Config struct {
 }
 
 func main() {
+	dbcfg := DBConfig{"localhost", 5432, "user", "P@ssw0rd", "mydb"}
+
 	var cfg Config
 	err := env.Parse(&cfg)
 	if err != nil {
@@ -46,6 +57,9 @@ func main() {
 	})
 	r.Get("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.GetUserURLs(rw, r, s, cfg.BaseURL)
+	})
+	r.Get("/ping", func(rw http.ResponseWriter, r *http.Request) {
+		handlers.PingDB(rw, r, dbcfg.host, dbcfg.port, dbcfg.user, dbcfg.password, dbcfg.dbname)
 	})
 	log.Fatal(http.ListenAndServe(cfg.ServerAddress, r))
 

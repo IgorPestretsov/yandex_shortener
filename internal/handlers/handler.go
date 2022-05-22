@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/app"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/go-chi/chi/v5"
+	_ "github.com/lib/pq"
 	"io"
 	"net/http"
 )
@@ -113,4 +115,31 @@ func GetUserURLs(w http.ResponseWriter, r *http.Request, s *storage.Storage, bas
 		return
 	}
 
+}
+
+func PingDB(
+	w http.ResponseWriter,
+	r *http.Request,
+	host string,
+	port uint,
+	user string,
+	password string,
+	dbname string,
+) {
+	psqlInfo := fmt.Sprintf("password=%s dbname=%s sslmode=disable"+" host=%s port=%d user=%s ",
+		password, dbname, host, port, user)
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
