@@ -1,4 +1,4 @@
-package storage
+package FileStorage
 
 import (
 	"encoding/gob"

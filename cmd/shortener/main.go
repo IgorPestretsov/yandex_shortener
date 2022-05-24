@@ -2,13 +2,14 @@ package main
 
 import (
 	"flag"
+	"github.com/IgorPestretsov/yandex_shortener/internal/FileStorage"
+	"github.com/IgorPestretsov/yandex_shortener/internal/SQLStorage"
 	"github.com/IgorPestretsov/yandex_shortener/internal/handlers"
 	"github.com/IgorPestretsov/yandex_shortener/internal/middlewares"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-
 	"log"
 	"net/http"
 )
@@ -29,8 +30,14 @@ func main() {
 		log.Fatal(err)
 	}
 	parseFlags(&cfg)
+	var s storage.Storage
+	if cfg.DBdsn != "" {
+		s = SQLStorage.New(cfg.DBdsn)
 
-	s := storage.New(cfg.FileStoragePath)
+	} else {
+		s = FileStorage.New(cfg.FileStoragePath)
+	}
+
 	defer s.Close()
 
 	r := chi.NewRouter()
@@ -61,7 +68,7 @@ func main() {
 func parseFlags(config *Config) {
 	flag.StringVar(&config.ServerAddress, "a", config.ServerAddress, "Server address to listen on")
 	flag.StringVar(&config.BaseURL, "b", config.BaseURL, "Base URL shortlinks")
-	flag.StringVar(&config.FileStoragePath, "f", config.FileStoragePath, "File storage path")
+	flag.StringVar(&config.FileStoragePath, "f", config.FileStoragePath, "File FileStorage path")
 	flag.StringVar(&config.DBdsn, "d", config.DBdsn, "DB connection string")
 	flag.Parse()
 }

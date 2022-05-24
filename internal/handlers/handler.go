@@ -16,9 +16,6 @@ type userRequest struct {
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
-type allRequests struct {
-	Requests []*userRequest `json:"Clients"`
-}
 
 type inputData struct {
 	URL string `json:"url"`
@@ -27,14 +24,13 @@ type generatedData struct {
 	Result string `json:"result"`
 }
 
-func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s *storage.Storage) {
+func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s storage.Storage) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
 		http.Error(w, "ID param is missed", http.StatusBadRequest)
 		return
 	}
-	uid := r.Context().Value("uid").(string)
-	FullLink := s.LoadLinksPair(uid, id)
+	FullLink := s.LoadLinksPair(id)
 	if FullLink == "" {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
@@ -46,7 +42,7 @@ func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s *storage.Storage)
 
 }
 
-func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage, baseURL string) {
+func GetShortLink(rw http.ResponseWriter, r *http.Request, s storage.Storage, baseURL string) {
 	b, _ := io.ReadAll(r.Body)
 	if string(b) == "" {
 		rw.WriteHeader(http.StatusBadRequest)
@@ -61,7 +57,7 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s *storage.Storage, b
 		return
 	}
 }
-func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage, baseURL string) {
+func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s storage.Storage, baseURL string) {
 
 	uid := r.Context().Value("uid").(string)
 	inData := inputData{}
@@ -91,7 +87,7 @@ func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s *storage.Storage
 	}
 }
 
-func GetUserURLs(w http.ResponseWriter, r *http.Request, s *storage.Storage, baseURL string) {
+func GetUserURLs(w http.ResponseWriter, r *http.Request, s storage.Storage, baseURL string) {
 	uid := r.Context().Value("uid").(string)
 	fmt.Println(uid)
 	data := s.GetAllUserURLs(uid)
