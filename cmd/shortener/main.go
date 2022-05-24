@@ -18,7 +18,7 @@ type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
 	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
-	DBdsn           string `env:"DATABASE_DSN" envDefault:"password=P@ssw0rd dbname=mydb sslmode=disable host=localhost port=5432 user=user "`
+	DBdsn           string `env:"DATABASE_DSN"`
 }
 
 func main() {
