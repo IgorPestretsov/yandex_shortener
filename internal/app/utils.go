@@ -6,17 +6,17 @@ import (
 	"encoding/hex"
 	"errors"
 	"math/rand"
+	"time"
 )
 
 var secretkey = []byte("dsfewf64jwlj6so4difslkdj321")
 
 const seqLength = 5
-const idLength = 16
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 func GenerateShortLink() string {
-
+	rand.Seed(time.Now().UnixNano())
 	b := make([]rune, seqLength)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]
