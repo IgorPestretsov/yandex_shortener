@@ -16,6 +16,11 @@ type userRequest struct {
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
+type BatchElement struct {
+	CorrelationId string `json:"correlation_id"`
+	OriginalURL   string `json:"original_url,omitempty"`
+	ShortURL      string `json:"short_url"`
+}
 
 type inputData struct {
 	URL string `json:"url"`
@@ -74,6 +79,45 @@ func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s storage.Storage,
 	genData.Result = baseURL + "/" + id
 
 	output, err := json.Marshal(genData)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	rw.Header().Add("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusCreated)
+
+	_, err = rw.Write(output)
+	if err != nil {
+		return
+	}
+}
+
+func GetShortsLinksBatch(rw http.ResponseWriter, r *http.Request, s storage.Storage, baseURL string) {
+
+	uid := r.Context().Value("uid").(string)
+	var Data []BatchElement
+	//genData := generatedData{}
+	rawData, _ := io.ReadAll(r.Body)
+	err := json.Unmarshal(rawData, &Data)
+
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	fmt.Println(Data)
+	for n, _ := range Data {
+		Data[n].ShortURL = app.GenerateShortLink()
+	}
+	fmt.Println(Data)
+	for n, _ := range Data {
+		Data[n].OriginalURL = ""
+		Data[n].ShortURL = baseURL + "/" + Data[n].ShortURL
+		s.SaveLinksPair(uid, Data[n].OriginalURL, Data[n].ShortURL)
+	}
+	fmt.Println(Data)
+
+	output, err := json.Marshal(Data)
+	fmt.Println(string(output))
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
