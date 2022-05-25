@@ -35,6 +35,7 @@ func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s storage.Storage) 
 		http.Error(w, "ID param is missed", http.StatusBadRequest)
 		return
 	}
+	fmt.Println("ID:", id)
 	FullLink := s.LoadLinksPair(id)
 	if FullLink == "" {
 		http.Error(w, "Bad request", http.StatusBadRequest)
