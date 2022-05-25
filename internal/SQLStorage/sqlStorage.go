@@ -16,7 +16,7 @@ func New(dsn string) *Storage {
 	if err != nil {
 		panic(err)
 	}
-	_, err = s.db.Exec("CREATE TABLE IF NOT EXISTS links (key VARCHAR(15), url VARCHAR(200), user_id VARCHAR(15));")
+	_, err = s.db.Exec("CREATE TABLE IF NOT EXISTS links (key VARCHAR(50), url VARCHAR(500), user_id VARCHAR(50));")
 	if err != nil {
 		panic(err)
 	}
