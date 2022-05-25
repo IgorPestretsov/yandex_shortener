@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/FileStorage"
 	"github.com/IgorPestretsov/yandex_shortener/internal/SQLStorage"
 	"github.com/IgorPestretsov/yandex_shortener/internal/handlers"
@@ -32,6 +33,7 @@ func main() {
 	parseFlags(&cfg)
 	var s storage.Storage
 	if cfg.DBdsn != "" {
+		fmt.Println("SQL is using")
 		s = SQLStorage.New(cfg.DBdsn)
 
 	} else {
