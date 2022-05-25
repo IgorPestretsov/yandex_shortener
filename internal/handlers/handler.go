@@ -110,9 +110,9 @@ func GetShortsLinksBatch(rw http.ResponseWriter, r *http.Request, s storage.Stor
 	}
 	fmt.Println(Data)
 	for n, _ := range Data {
-		Data[n].OriginalURL = ""
-		Data[n].ShortURL = baseURL + "/" + Data[n].ShortURL
 		s.SaveLinksPair(uid, Data[n].OriginalURL, Data[n].ShortURL)
+		Data[n].ShortURL = baseURL + "/" + Data[n].ShortURL
+		Data[n].OriginalURL = ""
 	}
 	fmt.Println(Data)
 
