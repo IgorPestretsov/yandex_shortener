@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/FileStorage"
 	"github.com/IgorPestretsov/yandex_shortener/internal/SQLStorage"
 	"github.com/IgorPestretsov/yandex_shortener/internal/handlers"
@@ -19,7 +18,7 @@ type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
 	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
-	DBdsn           string `env:"DATABASE_DSN"`
+	DBdsn           string `env:"DATABASE_DSN" envDefault:"password=P@ssw0rd dbname=mydb sslmode=disable host=localhost port=5432 user=user "`
 }
 
 func main() {
@@ -33,7 +32,7 @@ func main() {
 	parseFlags(&cfg)
 	var s storage.Storage
 	if cfg.DBdsn != "" {
-		fmt.Println("SQL is using")
+		log.Println("SQL is using")
 		s = SQLStorage.New(cfg.DBdsn)
 
 	} else {

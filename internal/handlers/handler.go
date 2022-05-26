@@ -3,10 +3,13 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/app"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/go-chi/chi/v5"
+	"github.com/jackc/pgerrcode"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 	"io"
 	"net/http"
@@ -56,12 +59,18 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s storage.Storage, ba
 	}
 	uid := r.Context().Value("uid").(string)
 	shortLink := app.GenerateShortLink()
-	s.SaveLinksPair(uid, string(b), shortLink)
-	rw.WriteHeader(http.StatusCreated)
-	_, err := rw.Write([]byte(baseURL + "/" + shortLink))
-	if err != nil {
-		return
+	existedShortLink, err := s.SaveLinksPair(uid, string(b), shortLink)
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) && pqErr.Code == pgerrcode.UniqueViolation {
+		rw.WriteHeader(http.StatusConflict)
+		_, err = rw.Write([]byte(baseURL + "/" + existedShortLink))
+
+	} else {
+		rw.WriteHeader(http.StatusCreated)
+		_, err = rw.Write([]byte(baseURL + "/" + shortLink))
+
 	}
+
 }
 func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s storage.Storage, baseURL string) {
 
@@ -76,16 +85,28 @@ func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s storage.Storage,
 		return
 	}
 	id := app.GenerateShortLink()
-	s.SaveLinksPair(uid, inData.URL, id)
 	genData.Result = baseURL + "/" + id
+
+	existedShortLink, err := s.SaveLinksPair(uid, inData.URL, id)
+
+	rw.Header().Add("Content-Type", "application/json")
+	var pqErr *pq.Error
+
+	if errors.As(err, &pqErr) && pqErr.Code == pgerrcode.UniqueViolation {
+		rw.WriteHeader(http.StatusConflict)
+		genData.Result = baseURL + "/" + existedShortLink
+
+	} else {
+		rw.WriteHeader(http.StatusCreated)
+		genData.Result = baseURL + "/" + id
+
+	}
 
 	output, err := json.Marshal(genData)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	rw.Header().Add("Content-Type", "application/json")
-	rw.WriteHeader(http.StatusCreated)
 
 	_, err = rw.Write(output)
 	if err != nil {

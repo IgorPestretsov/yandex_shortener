@@ -16,7 +16,7 @@ func New(dsn string) *Storage {
 	if err != nil {
 		panic(err)
 	}
-	_, err = s.db.Exec("CREATE TABLE IF NOT EXISTS links (key VARCHAR(50), url VARCHAR(500), user_id VARCHAR(50));")
+	_, err = s.db.Exec("CREATE TABLE IF NOT EXISTS links (key VARCHAR(50), url VARCHAR(500) UNIQUE, user_id VARCHAR(50));")
 	if err != nil {
 		panic(err)
 	}
@@ -25,11 +25,8 @@ func New(dsn string) *Storage {
 
 func (s *Storage) LoadLinksPair(key string) string {
 	var output sql.NullString
-	err := s.db.QueryRow("select url from links where key=$1", key).Scan(&output)
+	_ = s.db.QueryRow("select url from links where key=$1", key).Scan(&output)
 
-	if err != nil {
-		panic(err)
-	}
 	if output.Valid {
 		return output.String
 	} else {
@@ -37,11 +34,15 @@ func (s *Storage) LoadLinksPair(key string) string {
 	}
 }
 
-func (s *Storage) SaveLinksPair(uid string, link string, key string) {
+func (s *Storage) SaveLinksPair(uid string, link string, key string) (string, error) {
 	_, err := s.db.Exec("insert into links(key,url,user_id) values ($1,$2,$3);", key, link, uid)
 	if err != nil {
-		panic(err)
+		s.db.QueryRow("select key from links where url=$1", link).Scan(&key)
+		return key, err
+	} else {
+		return "", nil
 	}
+
 }
 
 func (s *Storage) GetAllUserURLs(uid string) map[string]string {

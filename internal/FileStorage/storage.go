@@ -49,7 +49,7 @@ func (s *Storage) LoadLinksPair(key string) string {
 	return ""
 }
 
-func (s *Storage) SaveLinksPair(uid string, key string, link string) {
+func (s *Storage) SaveLinksPair(uid string, key string, link string) (string, error) {
 	if _, ok := s.Storage[uid]; !ok {
 		s.Storage[uid] = make(map[string]string)
 	}
@@ -58,10 +58,10 @@ func (s *Storage) SaveLinksPair(uid string, key string, link string) {
 		err := s.w.WriteEvent(s.Storage)
 
 		if err != nil {
-			log.Fatal(err)
+			return "", err
 		}
 	}
-
+	return "", nil
 }
 
 func (s *Storage) GetAllUserURLs(uid string) map[string]string {
