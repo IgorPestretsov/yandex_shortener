@@ -73,7 +73,7 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s storage.Storage, ba
 }
 func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s storage.Storage, baseURL string) {
 
-	uid := r.Context().Value("uid").(string)
+	uid := r.Context().Value(middlewares.Ctxkey{}).(string)
 	inData := inputData{}
 	genData := generatedData{}
 	rawData, _ := io.ReadAll(r.Body)
@@ -115,7 +115,7 @@ func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s storage.Storage,
 
 func GetShortsLinksBatch(rw http.ResponseWriter, r *http.Request, s storage.Storage, baseURL string) {
 
-	uid := r.Context().Value("uid").(string)
+	uid := r.Context().Value(middlewares.Ctxkey{}).(string)
 	var Data []BatchElement
 	//genData := generatedData{}
 	rawData, _ := io.ReadAll(r.Body)
