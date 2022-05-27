@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-type key string
+type Ctxkey struct{}
 
 func Decompress(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -57,8 +57,7 @@ func AuthUser(next http.Handler) http.Handler {
 			}
 
 		}
-		var k key = "uuid"
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), k, uid)))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), Ctxkey{}, uid)))
 	})
 
 }

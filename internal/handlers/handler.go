@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/IgorPestretsov/yandex_shortener/internal/app"
+	"github.com/IgorPestretsov/yandex_shortener/internal/middlewares"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgerrcode"
@@ -55,7 +56,7 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s storage.Storage, ba
 		return
 	}
 
-	uid := r.Context().Value("uid").(string)
+	uid := r.Context().Value(middlewares.Ctxkey{}).(string)
 	shortLink := app.GenerateShortLink()
 	existedShortLink, err := s.SaveLinksPair(uid, string(b), shortLink)
 	var pqErr *pq.Error
@@ -148,7 +149,7 @@ func GetShortsLinksBatch(rw http.ResponseWriter, r *http.Request, s storage.Stor
 }
 
 func GetUserURLs(w http.ResponseWriter, r *http.Request, s storage.Storage, baseURL string) {
-	uid := r.Context().Value("uid").(string)
+	uid := r.Context().Value(middlewares.Ctxkey{}).(string)
 	data := s.GetAllUserURLs(uid)
 	if len(data) == 0 {
 		w.WriteHeader(http.StatusNoContent)
