@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/IgorPestretsov/yandex_shortener/internal/FileStorage"
+	"github.com/IgorPestretsov/yandex_shortener/internal/filestorage"
 	"github.com/IgorPestretsov/yandex_shortener/internal/middlewares"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
@@ -49,7 +49,7 @@ func TestGetFullLinkByID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := FileStorage.New("")
+			s := filestorage.New("")
 			s.SaveLinksPair("2182651e", "https://google.com", "ggl")
 			s.SaveLinksPair("2182651e", "https://practicum.yandex.ru", "yndxprct")
 			r := chi.NewRouter()
@@ -96,7 +96,7 @@ func TestGetShortLink(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := FileStorage.New("")
+			s := filestorage.New("")
 
 			r := chi.NewRouter()
 			r.Use(middlewares.AuthUser)
@@ -141,7 +141,7 @@ func TestGetShortLinkAPI(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := FileStorage.New("")
+			s := filestorage.New("")
 
 			r := chi.NewRouter()
 			r.Use(middlewares.AuthUser)

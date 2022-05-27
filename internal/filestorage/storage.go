@@ -1,4 +1,4 @@
-package FileStorage
+package filestorage
 
 import (
 	"log"

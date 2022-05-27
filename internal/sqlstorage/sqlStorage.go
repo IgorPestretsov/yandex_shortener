@@ -1,4 +1,4 @@
-package SQLStorage
+package sqlstorage
 
 import (
 	"database/sql"
@@ -47,7 +47,9 @@ func (s *Storage) SaveLinksPair(uid string, link string, key string) (string, er
 
 func (s *Storage) GetAllUserURLs(uid string) map[string]string {
 	output := make(map[string]string)
-	rows, err := s.db.Query("select url, key from links where user_id=$1", uid)
+	rows, _ := s.db.Query("select url, key from links where user_id=$1", uid)
+	err := rows.Err()
+
 	if err != nil {
 		panic(err)
 	}

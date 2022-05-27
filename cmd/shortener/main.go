@@ -2,10 +2,10 @@ package main
 
 import (
 	"flag"
-	"github.com/IgorPestretsov/yandex_shortener/internal/FileStorage"
-	"github.com/IgorPestretsov/yandex_shortener/internal/SQLStorage"
+	"github.com/IgorPestretsov/yandex_shortener/internal/filestorage"
 	"github.com/IgorPestretsov/yandex_shortener/internal/handlers"
 	"github.com/IgorPestretsov/yandex_shortener/internal/middlewares"
+	"github.com/IgorPestretsov/yandex_shortener/internal/sqlstorage"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/caarlos0/env/v6"
 	"github.com/go-chi/chi/v5"
@@ -33,10 +33,10 @@ func main() {
 	var s storage.Storage
 	if cfg.DBdsn != "" {
 		log.Println("SQL is using")
-		s = SQLStorage.New(cfg.DBdsn)
+		s = sqlstorage.New(cfg.DBdsn)
 
 	} else {
-		s = FileStorage.New(cfg.FileStoragePath)
+		s = filestorage.New(cfg.FileStoragePath)
 	}
 
 	defer s.Close()
