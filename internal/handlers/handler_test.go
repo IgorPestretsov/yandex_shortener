@@ -50,8 +50,8 @@ func TestGetFullLinkByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := FileStorage.New("")
-			s.SaveLinksPair("2182651e", "ggl", "https://google.com")
-			s.SaveLinksPair("2182651e", "yndxprct", "https://practicum.yandex.ru")
+			s.SaveLinksPair("2182651e", "https://google.com", "ggl")
+			s.SaveLinksPair("2182651e", "https://practicum.yandex.ru", "yndxprct")
 			r := chi.NewRouter()
 
 			r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {

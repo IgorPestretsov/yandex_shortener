@@ -49,7 +49,7 @@ func (s *Storage) LoadLinksPair(key string) string {
 	return ""
 }
 
-func (s *Storage) SaveLinksPair(uid string, key string, link string) (string, error) {
+func (s *Storage) SaveLinksPair(uid string, link string, key string) (string, error) {
 	if _, ok := s.Storage[uid]; !ok {
 		s.Storage[uid] = make(map[string]string)
 	}
