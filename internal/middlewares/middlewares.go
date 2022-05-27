@@ -55,7 +55,8 @@ func AuthUser(next http.Handler) http.Handler {
 			}
 
 		}
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "uid", uid)))
+		key := "uid"
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), key, uid)))
 	})
 
 }
