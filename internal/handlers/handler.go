@@ -9,7 +9,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgerrcode"
 	"github.com/lib/pq"
-	_ "github.com/lib/pq"
 	"io"
 	"net/http"
 )
@@ -19,7 +18,7 @@ type userRequest struct {
 	OriginalURL string `json:"original_url"`
 }
 type BatchElement struct {
-	CorrelationId string `json:"correlation_id"`
+	CorrelationID string `json:"correlation_id"`
 	OriginalURL   string `json:"original_url,omitempty"`
 	ShortURL      string `json:"short_url"`
 }
@@ -62,11 +61,11 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s storage.Storage, ba
 	var pqErr *pq.Error
 	if errors.As(err, &pqErr) && pqErr.Code == pgerrcode.UniqueViolation {
 		rw.WriteHeader(http.StatusConflict)
-		_, err = rw.Write([]byte(baseURL + "/" + existedShortLink))
+		rw.Write([]byte(baseURL + "/" + existedShortLink))
 
 	} else {
 		rw.WriteHeader(http.StatusCreated)
-		_, err = rw.Write([]byte(baseURL + "/" + shortLink))
+		rw.Write([]byte(baseURL + "/" + shortLink))
 
 	}
 
@@ -125,10 +124,10 @@ func GetShortsLinksBatch(rw http.ResponseWriter, r *http.Request, s storage.Stor
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	for n, _ := range Data {
+	for n := range Data {
 		Data[n].ShortURL = app.GenerateShortLink()
 	}
-	for n, _ := range Data {
+	for n := range Data {
 		s.SaveLinksPair(uid, Data[n].OriginalURL, Data[n].ShortURL)
 		Data[n].ShortURL = baseURL + "/" + Data[n].ShortURL
 		Data[n].OriginalURL = ""
