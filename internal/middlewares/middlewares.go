@@ -57,8 +57,7 @@ func AuthUser(next http.Handler) http.Handler {
 			}
 
 		}
-		var k key
-		k = "uuid"
+		var k key = "uuid"
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), k, uid)))
 	})
 
