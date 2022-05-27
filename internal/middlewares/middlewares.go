@@ -10,6 +10,8 @@ import (
 	"net/http"
 )
 
+type key string
+
 func Decompress(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var reader io.Reader
@@ -55,8 +57,9 @@ func AuthUser(next http.Handler) http.Handler {
 			}
 
 		}
-		key := "uid"
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), key, uid)))
+		var k key
+		k = "uuid"
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), k, uid)))
 	})
 
 }
