@@ -53,7 +53,7 @@ func (s *Storage) SaveLinksPair(uid string, key string, link string) (string, er
 	if _, ok := s.Storage[uid]; !ok {
 		s.Storage[uid] = make(map[string]string)
 	}
-	s.Storage[uid][link] = key
+	s.Storage[uid][key] = link
 	if s.w != nil {
 		err := s.w.WriteEvent(s.Storage)
 

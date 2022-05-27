@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/app"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/go-chi/chi/v5"
@@ -38,7 +37,6 @@ func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s storage.Storage) 
 		http.Error(w, "ID param is missed", http.StatusBadRequest)
 		return
 	}
-	fmt.Println("ID:", id)
 	FullLink := s.LoadLinksPair(id)
 	if FullLink == "" {
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -57,6 +55,7 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s storage.Storage, ba
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
 	uid := r.Context().Value("uid").(string)
 	shortLink := app.GenerateShortLink()
 	existedShortLink, err := s.SaveLinksPair(uid, string(b), shortLink)
@@ -126,20 +125,16 @@ func GetShortsLinksBatch(rw http.ResponseWriter, r *http.Request, s storage.Stor
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	fmt.Println(Data)
 	for n, _ := range Data {
 		Data[n].ShortURL = app.GenerateShortLink()
 	}
-	fmt.Println(Data)
 	for n, _ := range Data {
 		s.SaveLinksPair(uid, Data[n].OriginalURL, Data[n].ShortURL)
 		Data[n].ShortURL = baseURL + "/" + Data[n].ShortURL
 		Data[n].OriginalURL = ""
 	}
-	fmt.Println(Data)
 
 	output, err := json.Marshal(Data)
-	fmt.Println(string(output))
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
@@ -155,9 +150,7 @@ func GetShortsLinksBatch(rw http.ResponseWriter, r *http.Request, s storage.Stor
 
 func GetUserURLs(w http.ResponseWriter, r *http.Request, s storage.Storage, baseURL string) {
 	uid := r.Context().Value("uid").(string)
-	fmt.Println(uid)
 	data := s.GetAllUserURLs(uid)
-	fmt.Println(data)
 	if len(data) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		return
@@ -168,7 +161,6 @@ func GetUserURLs(w http.ResponseWriter, r *http.Request, s storage.Storage, base
 	}
 
 	output, _ := json.Marshal(userRequests)
-	fmt.Println(output)
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 

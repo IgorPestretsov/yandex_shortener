@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/IgorPestretsov/yandex_shortener/internal/FileStorage"
+	"github.com/IgorPestretsov/yandex_shortener/internal/middlewares"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"io"
@@ -49,9 +50,8 @@ func TestGetFullLinkByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := FileStorage.New("")
-			s.SaveLinksPair("https://google.com", "ggl")
-			s.SaveLinksPair("https://practicum.yandex.ru", "yndxprct")
-
+			s.SaveLinksPair("2182651e", "ggl", "https://google.com")
+			s.SaveLinksPair("2182651e", "yndxprct", "https://practicum.yandex.ru")
 			r := chi.NewRouter()
 
 			r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
@@ -65,7 +65,7 @@ func TestGetFullLinkByID(t *testing.T) {
 			result := w.Result()
 			defer result.Body.Close()
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
-			assert.Equal(t, result.Header.Get("Location"), tt.want.location)
+			assert.Equal(t, tt.want.location, result.Header.Get("Location"))
 		})
 	}
 }
@@ -99,7 +99,7 @@ func TestGetShortLink(t *testing.T) {
 			s := FileStorage.New("")
 
 			r := chi.NewRouter()
-
+			r.Use(middlewares.AuthUser)
 			r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
 				GetShortLink(rw, r, s, "http://localhost:8080")
 			})
@@ -144,7 +144,7 @@ func TestGetShortLinkAPI(t *testing.T) {
 			s := FileStorage.New("")
 
 			r := chi.NewRouter()
-
+			r.Use(middlewares.AuthUser)
 			r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
 				GetShortLink(rw, r, s, "http://localhost:8080")
 			})
