@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/IgorPestretsov/yandex_shortener/internal/app"
 	"github.com/IgorPestretsov/yandex_shortener/internal/middlewares"
 	"github.com/IgorPestretsov/yandex_shortener/internal/sqlstorage"
@@ -61,8 +62,9 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s storage.Storage, ba
 	shortLink := app.GenerateShortLink()
 	existedShortLink, err := s.SaveLinksPair(uid, string(b), shortLink)
 
-	var aee sqlstorage.AlreadyExistErr
-	if errors.Is(err, &aee) {
+	var aee *sqlstorage.AlreadyExistErr
+	fmt.Println(err)
+	if errors.As(err, &aee) {
 
 		rw.WriteHeader(http.StatusConflict)
 		rw.Write([]byte(baseURL + "/" + existedShortLink))

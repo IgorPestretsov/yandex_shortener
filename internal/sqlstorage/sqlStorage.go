@@ -43,7 +43,7 @@ func (s *Storage) SaveLinksPair(uid string, link string, key string) (string, er
 
 	if errors.As(err, &pqErr) && pqErr.Code == pgerrcode.UniqueViolation {
 		s.db.QueryRow("select key from links where url=$1", link).Scan(&key)
-		err = NewAlreadyExistErr(key, err)
+		err = NewAlreadyExistErr(link, err)
 		return key, err
 	}
 	return "", err
