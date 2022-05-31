@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/jackc/pgerrcode"
 	"github.com/lib/pq"
-	_ "github.com/lib/pq"
 )
 
 type Storage struct {
