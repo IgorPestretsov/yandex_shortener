@@ -61,7 +61,8 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s storage.Storage, ba
 	shortLink := app.GenerateShortLink()
 	existedShortLink, err := s.SaveLinksPair(uid, string(b), shortLink)
 
-	if errors.As(err, &sqlstorage.AlreadyExistErr{}) {
+	var aee sqlstorage.AlreadyExistErr
+	if errors.Is(err, &aee) {
 
 		rw.WriteHeader(http.StatusConflict)
 		rw.Write([]byte(baseURL + "/" + existedShortLink))
