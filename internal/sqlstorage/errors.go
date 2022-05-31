@@ -10,7 +10,7 @@ type AlreadyExistErr struct {
 }
 
 func (ae *AlreadyExistErr) Error() string {
-	return fmt.Sprintf("Already exist record with value: %v", ae.key, ae.Err)
+	return fmt.Sprintf("Already exist record with value: %v, %v ", ae.key, ae.Err)
 }
 
 func NewAlreadyExistErr(key string, err error) error {
