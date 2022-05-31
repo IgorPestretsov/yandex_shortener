@@ -18,7 +18,7 @@ func NewReader(filename string) (*reader, error) {
 	return &reader{file: file, decoder: gob.NewDecoder(file)}, nil
 }
 
-func (c *reader) ReadData() (map[string]map[string]string, error) {
+func (c *reader) ReadData() (NestedMap, error) {
 	data := make(map[string]map[string]string)
 	if err := c.decoder.Decode(&data); err != nil {
 		return data, err

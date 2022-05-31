@@ -4,14 +4,16 @@ import (
 	"log"
 )
 
+type NestedMap map[string]map[string]string
+
 type Storage struct {
-	Storage map[string]map[string]string
+	Storage NestedMap
 	r       *reader
 	w       *writer
 }
 
 func New(filepath string) *Storage {
-	data := make(map[string]map[string]string)
+	data := make(NestedMap)
 	s := Storage{Storage: data}
 	if filepath != "" {
 		w, err := NewWriter(filepath)

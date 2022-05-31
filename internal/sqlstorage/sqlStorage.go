@@ -2,6 +2,9 @@ package sqlstorage
 
 import (
 	"database/sql"
+	"errors"
+	"github.com/jackc/pgerrcode"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
@@ -36,13 +39,14 @@ func (s *Storage) LoadLinksPair(key string) string {
 
 func (s *Storage) SaveLinksPair(uid string, link string, key string) (string, error) {
 	_, err := s.db.Exec("insert into links(key,url,user_id) values ($1,$2,$3);", key, link, uid)
-	if err != nil {
-		s.db.QueryRow("select key from links where url=$1", link).Scan(&key)
-		return key, err
-	} else {
-		return "", nil
-	}
+	var pqErr *pq.Error
 
+	if errors.As(err, &pqErr) && pqErr.Code == pgerrcode.UniqueViolation {
+		s.db.QueryRow("select key from links where url=$1", link).Scan(&key)
+		err = NewAlreadyExistErr(key, err)
+		return key, err
+	}
+	return "", err
 }
 
 func (s *Storage) GetAllUserURLs(uid string) map[string]string {

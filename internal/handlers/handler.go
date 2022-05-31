@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/IgorPestretsov/yandex_shortener/internal/app"
 	"github.com/IgorPestretsov/yandex_shortener/internal/middlewares"
+	"github.com/IgorPestretsov/yandex_shortener/internal/sqlstorage"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgerrcode"
@@ -59,16 +60,20 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s storage.Storage, ba
 	uid := r.Context().Value(middlewares.Ctxkey{}).(string)
 	shortLink := app.GenerateShortLink()
 	existedShortLink, err := s.SaveLinksPair(uid, string(b), shortLink)
-	var pqErr *pq.Error
-	if errors.As(err, &pqErr) && pqErr.Code == pgerrcode.UniqueViolation {
+
+	if errors.As(err, &sqlstorage.AlreadyExistErr{}) {
+
 		rw.WriteHeader(http.StatusConflict)
 		rw.Write([]byte(baseURL + "/" + existedShortLink))
-
-	} else {
-		rw.WriteHeader(http.StatusCreated)
-		rw.Write([]byte(baseURL + "/" + shortLink))
-
+		return
 	}
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	rw.WriteHeader(http.StatusCreated)
+	rw.Write([]byte(baseURL + "/" + shortLink))
 
 }
 func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s storage.Storage, baseURL string) {
