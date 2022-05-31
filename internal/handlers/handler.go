@@ -10,8 +10,6 @@ import (
 	"github.com/IgorPestretsov/yandex_shortener/internal/sqlstorage"
 	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/go-chi/chi/v5"
-	"github.com/jackc/pgerrcode"
-	"github.com/lib/pq"
 	"io"
 	"net/http"
 )
@@ -97,12 +95,12 @@ func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s storage.Storage,
 	existedShortLink, err := s.SaveLinksPair(uid, inData.URL, id)
 
 	rw.Header().Add("Content-Type", "application/json")
-	var pqErr *pq.Error
 
-	if errors.As(err, &pqErr) && pqErr.Code == pgerrcode.UniqueViolation {
+	var aee *sqlstorage.AlreadyExistErr
+	if errors.As(err, &aee) {
+
 		rw.WriteHeader(http.StatusConflict)
 		genData.Result = baseURL + "/" + existedShortLink
-
 	} else {
 		rw.WriteHeader(http.StatusCreated)
 		genData.Result = baseURL + "/" + id
