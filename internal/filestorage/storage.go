@@ -12,6 +12,11 @@ type Storage struct {
 	w       *writer
 }
 
+func (s *Storage) GetChannelForDelete() chan map[string]string {
+	//TODO implement me
+	panic("implement me")
+}
+
 func New(filepath string) *Storage {
 	data := make(NestedMap)
 	s := Storage{Storage: data}

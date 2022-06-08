@@ -5,4 +5,5 @@ type Storage interface {
 	SaveLinksPair(uid string, key string, link string) (string, error)
 	GetAllUserURLs(uid string) map[string]string
 	Close()
+	GetChannelForDelete() chan map[string]string
 }

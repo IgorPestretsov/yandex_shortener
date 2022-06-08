@@ -43,6 +43,11 @@ func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s storage.Storage) 
 		return
 	}
 
+	if FullLink == "gone" {
+		http.Error(w, "Link was deleted", http.StatusGone)
+		return
+	}
+
 	w.Header().Set("Location", FullLink)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 	r.Body.Close()
@@ -76,6 +81,24 @@ func GetShortLink(rw http.ResponseWriter, r *http.Request, s storage.Storage, ba
 	rw.WriteHeader(http.StatusCreated)
 	rw.Write([]byte(baseURL + "/" + shortLink))
 
+}
+func DeleteURLs(rw http.ResponseWriter, r *http.Request, ch chan map[string]string) {
+	uid := r.Context().Value(middlewares.Ctxkey{}).(string)
+	var inToDelete []string
+	dec := json.NewDecoder(r.Body)
+	err := dec.Decode(&inToDelete)
+	if err != nil {
+		rw.WriteHeader(http.StatusBadRequest)
+	}
+
+	IDsWithUIDs := make(map[string]string)
+	for _, url := range inToDelete {
+		IDsWithUIDs[url] = uid
+	}
+
+	ch <- IDsWithUIDs
+
+	rw.WriteHeader(http.StatusAccepted)
 }
 func GetShortLinkAPI(rw http.ResponseWriter, r *http.Request, s storage.Storage, baseURL string) {
 
