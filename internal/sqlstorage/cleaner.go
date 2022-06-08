@@ -58,7 +58,6 @@ func (c *Cleaner) fillQueue() chan RecordToDelete {
 			}
 
 		}
-		close(out)
 	}()
 	return out
 }

@@ -108,8 +108,13 @@ func (s *Storage) CheckReqToDelete(r RecordToDelete) bool {
 }
 func (s *Storage) DeleteRecords(delBatch []RecordToDelete) {
 	tx, err := s.db.Begin()
-
+	if err != nil {
+		log.Fatalf("unable to open db connection")
+	}
 	stmt, err := tx.Prepare("update links set is_deleted=TRUE where key=$1;")
+	if err != nil {
+		log.Fatalf("db error")
+	}
 
 	for _, r := range delBatch {
 		if _, err = stmt.Exec(r.urlID); err != nil {
