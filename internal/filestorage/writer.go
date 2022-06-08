@@ -1,4 +1,4 @@
-package storage
+package filestorage
 
 import (
 	"encoding/gob"
@@ -19,7 +19,7 @@ func NewWriter(filename string) (*writer, error) {
 	return &writer{file: file, encoder: gob.NewEncoder(file)}, nil
 }
 
-func (p *writer) WriteEvent(data map[string]string) error {
+func (p *writer) WriteEvent(data NestedMap) error {
 	return p.encoder.Encode(data)
 }
 

@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
+	"github.com/IgorPestretsov/yandex_shortener/internal/filestorage"
+	"github.com/IgorPestretsov/yandex_shortener/internal/middlewares"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"io"
@@ -48,10 +49,9 @@ func TestGetFullLinkByID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := storage.New("")
-			s.SaveLinksPair("https://google.com", "ggl")
-			s.SaveLinksPair("https://practicum.yandex.ru", "yndxprct")
-
+			s := filestorage.New("")
+			s.SaveLinksPair("2182651e", "https://google.com", "ggl")
+			s.SaveLinksPair("2182651e", "https://practicum.yandex.ru", "yndxprct")
 			r := chi.NewRouter()
 
 			r.Get("/{id}", func(rw http.ResponseWriter, r *http.Request) {
@@ -65,7 +65,7 @@ func TestGetFullLinkByID(t *testing.T) {
 			result := w.Result()
 			defer result.Body.Close()
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
-			assert.Equal(t, result.Header.Get("Location"), tt.want.location)
+			assert.Equal(t, tt.want.location, result.Header.Get("Location"))
 		})
 	}
 }
@@ -96,10 +96,10 @@ func TestGetShortLink(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := storage.New("")
+			s := filestorage.New("")
 
 			r := chi.NewRouter()
-
+			r.Use(middlewares.AuthUser)
 			r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
 				GetShortLink(rw, r, s, "http://localhost:8080")
 			})
@@ -141,10 +141,10 @@ func TestGetShortLinkAPI(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := storage.New("")
+			s := filestorage.New("")
 
 			r := chi.NewRouter()
-
+			r.Use(middlewares.AuthUser)
 			r.Post("/", func(rw http.ResponseWriter, r *http.Request) {
 				GetShortLink(rw, r, s, "http://localhost:8080")
 			})

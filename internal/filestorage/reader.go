@@ -1,4 +1,4 @@
-package storage
+package filestorage
 
 import (
 	"encoding/gob"
@@ -18,8 +18,8 @@ func NewReader(filename string) (*reader, error) {
 	return &reader{file: file, decoder: gob.NewDecoder(file)}, nil
 }
 
-func (c *reader) ReadData() (map[string]string, error) {
-	data := make(map[string]string)
+func (c *reader) ReadData() (NestedMap, error) {
+	data := make(map[string]map[string]string)
 	if err := c.decoder.Decode(&data); err != nil {
 		return data, err
 	}
