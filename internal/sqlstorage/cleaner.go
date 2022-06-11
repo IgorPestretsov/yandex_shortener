@@ -24,7 +24,9 @@ func NewCleaner(s *Storage) Cleaner {
 
 func (c *Cleaner) Run(quit chan bool) {
 	c.q = quit
+	//queue - channel with all records that users want to delete
 	queue := c.fillQueue()
+	//slice with fanout channels with records that users want to delete
 	fanOutChs := c.fanOut(queue, workersCount)
 	workerChs := make([]chan RecordToDelete, 0, workersCount)
 
@@ -33,6 +35,7 @@ func (c *Cleaner) Run(quit chan bool) {
 		c.newWorker(fanOutCh, workerCh)
 		workerChs = append(workerChs, workerCh)
 	}
+	//channel with checked by workers records that need to be deleted
 	toDeleteChn := c.fanIn(workerChs...)
 	go func() {
 		var batchToDelete []RecordToDelete
