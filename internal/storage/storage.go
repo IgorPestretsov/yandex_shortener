@@ -1,5 +1,7 @@
 package storage
 
+const GoneValue = "gone"
+
 type Storage interface {
 	LoadLinksPair(key string) string
 	SaveLinksPair(uid string, key string, link string) (string, error)

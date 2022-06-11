@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"github.com/jackc/pgerrcode"
 	"github.com/lib/pq"
 	"log"
@@ -15,10 +16,10 @@ type Storage struct {
 	buffer  []RecordToDelete
 }
 
-func New(dsn string) *Storage {
+func New(dsn string, quite chan bool) *Storage {
 	s := Storage{}
 	s.cleaner = NewCleaner(&s)
-	s.cleaner.Run()
+	s.cleaner.Run(quite)
 
 	var err error
 	s.db, err = sql.Open("postgres", dsn)
@@ -43,7 +44,7 @@ func (s *Storage) LoadLinksPair(key string) string {
 	_ = s.db.QueryRow("select url, is_deleted from links where key=$1", key).Scan(&output, &isDeleted)
 	if isDeleted.Valid {
 		if isDeleted.String == "true" {
-			return "gone"
+			return storage.GoneValue
 		}
 
 	}
@@ -104,7 +105,6 @@ func (s *Storage) CheckReqToDelete(r RecordToDelete) bool {
 		return true
 	}
 	return false
-
 }
 func (s *Storage) DeleteRecords(delBatch []RecordToDelete) {
 	tx, err := s.db.Begin()
@@ -123,7 +123,6 @@ func (s *Storage) DeleteRecords(delBatch []RecordToDelete) {
 			}
 		}
 	}
-
 	if err := tx.Commit(); err != nil {
 		log.Fatalf("update drivers: unable to commit: %v", err)
 	}

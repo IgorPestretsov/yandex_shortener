@@ -37,18 +37,18 @@ func GetFullLinkByID(w http.ResponseWriter, r *http.Request, s storage.Storage) 
 		http.Error(w, "ID param is missed", http.StatusBadRequest)
 		return
 	}
-	FullLink := s.LoadLinksPair(id)
-	if FullLink == "" {
+	fullLink := s.LoadLinksPair(id)
+	if fullLink == "" {
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
-	if FullLink == "gone" {
+	if fullLink == storage.GoneValue {
 		http.Error(w, "Link was deleted", http.StatusGone)
 		return
 	}
 
-	w.Header().Set("Location", FullLink)
+	w.Header().Set("Location", fullLink)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 	r.Body.Close()
 

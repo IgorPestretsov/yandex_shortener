@@ -24,6 +24,8 @@ type Config struct {
 func main() {
 
 	var cfg Config
+	quit := make(chan bool)
+	defer func() { quit <- true }()
 
 	err := env.Parse(&cfg)
 	if err != nil {
@@ -33,7 +35,7 @@ func main() {
 	var s storage.Storage
 	if cfg.DBdsn != "" {
 		log.Println("SQL is using")
-		s = sqlstorage.New(cfg.DBdsn)
+		s = sqlstorage.New(cfg.DBdsn, quit)
 	} else {
 		s = filestorage.New(cfg.FileStoragePath)
 	}

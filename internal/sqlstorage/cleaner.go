@@ -16,6 +16,7 @@ type RecordToDelete struct {
 type Cleaner struct {
 	UserDeleteRequests chan map[string]string
 	storage            *Storage
+	q                  chan bool
 }
 
 func NewCleaner(s *Storage) Cleaner {
@@ -23,7 +24,8 @@ func NewCleaner(s *Storage) Cleaner {
 	return Cleaner{UserDeleteRequests: reqs, storage: s}
 }
 
-func (c *Cleaner) Run() {
+func (c *Cleaner) Run(quit chan bool) {
+	c.q = quit
 	queue := c.fillQueue()
 	fanOutChs := c.fanOut(queue, workersCount)
 	workerChs := make([]chan RecordToDelete, 0, workersCount)
@@ -51,14 +53,18 @@ func (c *Cleaner) fillQueue() chan RecordToDelete {
 	out := make(chan RecordToDelete)
 	go func() {
 		for {
-			for userReq := range c.UserDeleteRequests {
+			select {
+			case userReq := <-c.UserDeleteRequests:
 				for key, uuid := range userReq {
 					out <- RecordToDelete{urlID: key, userID: uuid}
 				}
+			case <-c.q:
+				close(out)
+				return
 			}
-
 		}
 	}()
+
 	return out
 }
 func (c *Cleaner) fanOut(inputCh chan RecordToDelete, n int) []chan RecordToDelete {
