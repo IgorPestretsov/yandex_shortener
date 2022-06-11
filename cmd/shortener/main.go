@@ -18,12 +18,14 @@ type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
 	BaseURL         string `env:"BASE_URL" envDefault:"http://localhost:8080"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
-	DBdsn           string `env:"DATABASE_DSN"`
+	DBdsn           string `env:"DATABASE_DSN" `
 }
 
 func main() {
 
 	var cfg Config
+	quit := make(chan bool)
+	defer func() { quit <- true }()
 
 	err := env.Parse(&cfg)
 	if err != nil {
@@ -33,10 +35,9 @@ func main() {
 	var s storage.Storage
 	if cfg.DBdsn != "" {
 		log.Println("SQL is using")
-		s = sqlstorage.New(cfg.DBdsn)
-
+		s = sqlstorage.New(cfg.DBdsn, quit)
 	} else {
-		s = filestorage.New(cfg.FileStoragePath)
+		s = filestorage.New(cfg.FileStoragePath, quit)
 	}
 
 	defer s.Close()
@@ -65,6 +66,9 @@ func main() {
 	})
 	r.Get("/ping", func(rw http.ResponseWriter, r *http.Request) {
 		handlers.PingDB(rw, r, cfg.DBdsn)
+	})
+	r.Delete("/api/user/urls", func(rw http.ResponseWriter, r *http.Request) {
+		handlers.DeleteURLs(rw, r, s.GetChannelForDelete())
 	})
 	log.Fatal(http.ListenAndServe(cfg.ServerAddress, r))
 

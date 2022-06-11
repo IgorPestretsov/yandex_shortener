@@ -1,6 +1,7 @@
 package filestorage
 
 import (
+	"github.com/IgorPestretsov/yandex_shortener/internal/storage"
 	"log"
 )
 
@@ -10,11 +11,18 @@ type Storage struct {
 	Storage NestedMap
 	r       *reader
 	w       *writer
+	cleaner Cleaner
 }
 
-func New(filepath string) *Storage {
+func (s *Storage) GetChannelForDelete() chan map[string]string {
+	return s.cleaner.UserDeleteRequests
+}
+
+func New(filepath string, q chan bool) *Storage {
 	data := make(NestedMap)
 	s := Storage{Storage: data}
+	s.cleaner = NewCleaner(&s)
+	s.cleaner.Run(q)
 	if filepath != "" {
 		w, err := NewWriter(filepath)
 		if err != nil {
@@ -44,8 +52,9 @@ func (s *Storage) loadStorageFromFile() {
 
 func (s *Storage) LoadLinksPair(key string) string {
 	for _, value := range s.Storage {
-		if FullLink, ok := value[key]; ok {
-			return FullLink
+
+		if fullLink, ok := value[key]; ok {
+			return fullLink
 		}
 	}
 	return ""
@@ -73,4 +82,7 @@ func (s *Storage) GetAllUserURLs(uid string) map[string]string {
 func (s *Storage) Close() {
 	s.w.Close()
 	s.r.Close()
+}
+func (s *Storage) DeleteRecord(toDelete RecordToDelete) {
+	s.Storage[toDelete.userID][toDelete.urlID] = storage.GoneValue
 }

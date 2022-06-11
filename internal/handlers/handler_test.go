@@ -49,7 +49,7 @@ func TestGetFullLinkByID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := filestorage.New("")
+			s := filestorage.New("", make(chan bool))
 			s.SaveLinksPair("2182651e", "https://google.com", "ggl")
 			s.SaveLinksPair("2182651e", "https://practicum.yandex.ru", "yndxprct")
 			r := chi.NewRouter()
@@ -96,7 +96,7 @@ func TestGetShortLink(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := filestorage.New("")
+			s := filestorage.New("", make(chan bool))
 
 			r := chi.NewRouter()
 			r.Use(middlewares.AuthUser)
@@ -141,7 +141,7 @@ func TestGetShortLinkAPI(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := filestorage.New("")
+			s := filestorage.New("", make(chan bool))
 
 			r := chi.NewRouter()
 			r.Use(middlewares.AuthUser)
