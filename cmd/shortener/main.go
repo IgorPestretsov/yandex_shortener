@@ -37,7 +37,7 @@ func main() {
 		log.Println("SQL is using")
 		s = sqlstorage.New(cfg.DBdsn, quit)
 	} else {
-		s = filestorage.New(cfg.FileStoragePath)
+		s = filestorage.New(cfg.FileStoragePath, quit)
 	}
 
 	defer s.Close()

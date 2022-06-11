@@ -6,8 +6,6 @@ import (
 
 const workersCount = 10
 
-type urlToDelete map[string]string
-
 type RecordToDelete struct {
 	urlID  string
 	userID string
